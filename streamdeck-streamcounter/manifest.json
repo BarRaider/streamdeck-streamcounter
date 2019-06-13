@@ -17,7 +17,7 @@
     }
   ],
   "Author": "BarRaider",
-  "Description": "Allows you to keep score and shows it on stream",
+  "Description": "A counter plugin you can use to keep score. The count is saved to a text file which you can then show on your stream",
   "Name": "Stream Counter",
   "Icon": "Images/pluginIcon",
   "URL": "https://barraider.github.io/",
