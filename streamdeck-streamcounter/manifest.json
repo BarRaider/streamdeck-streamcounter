@@ -1,0 +1,38 @@
+{
+  "Actions": [
+    {
+      "Icon": "Images/counterIcon",
+      "Name": "Stream Counter",
+      "States": [
+        {
+          "Image": "Images/counter",
+          "TitleAlignment": "middle",
+          "FontSize": "20"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Basic counter",
+      "UUID": "com.barraider.streamcounter",
+      "PropertyInspectorPath": "PropertyInspector/StreamCounter/StreamCounter.html"
+    }
+  ],
+  "Author": "BarRaider",
+  "Description": "Allows you to keep score and shows it on stream",
+  "Name": "Stream Counter",
+  "Icon": "Images/pluginIcon",
+  "URL": "https://barraider.github.io/",
+  "Version": "1.0",
+  "CodePath": "com.barraider.streamcounter",
+  "Category": "BarRaider",
+  "CategoryIcon": "Images/categoryIcon",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "4.3"
+  }
+}
