@@ -5,7 +5,7 @@
     <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
-    <title>BarRaider's Soundpad Integration</title>
+    <title>BarRaider's Stream Counter</title>
     <link rel="stylesheet" href="../sdpi.css">
     <script src="../sdtools.common.js"></script>
     <script src="../StreamCounter.js"></script>
@@ -23,6 +23,10 @@
             <div class="sdpi-item-label">Save File Name</div>
             <button class="sdpi-item-value max20" onclick="setSettings()">Save</button>
             <p>Click here after setting the file name</p>
+        </div>
+        <div class="sdpi-item" id="dvTitlePrefix">
+            <div class="sdpi-item-label">Title Prefix</div>
+            <input class="sdpi-item-value sdProperty" placeholder="Kills: " value="" id="titlePrefix" oninput="setSettings()">
         </div>
         <hr />
         <div class="sdpi-item" id="dvReset">

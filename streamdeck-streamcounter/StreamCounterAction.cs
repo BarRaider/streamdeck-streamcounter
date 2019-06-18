@@ -21,12 +21,16 @@ namespace BarRaider.StreamCounter
             {
                 PluginSettings instance = new PluginSettings();
                 instance.CounterFileName = String.Empty;
+                instance.TitlePrefix = String.Empty;
                 return instance;
             }
 
             [FilenameProperty]
             [JsonProperty(PropertyName = "counterFileName")]
             public string CounterFileName { get; set; }
+
+            [JsonProperty(PropertyName = "titlePrefix")]
+            public string TitlePrefix { get; set; }
         }
 
         #region Private Members
@@ -95,7 +99,7 @@ namespace BarRaider.StreamCounter
                     SaveCounterToFile();
                 }
             }
-            await Connection.SetTitleAsync(counter.ToString());
+            await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""} {counter}");
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
@@ -175,7 +179,6 @@ namespace BarRaider.StreamCounter
                 }
             }
         }
-
-        #endregion
+       #endregion
     }
 }
