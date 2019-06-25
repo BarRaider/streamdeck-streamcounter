@@ -99,7 +99,7 @@ namespace BarRaider.StreamCounter
                     SaveCounterToFile();
                 }
             }
-            await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""} {counter}");
+            await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""}{counter}");
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
