@@ -17,11 +17,11 @@
     }
   ],
   "Author": "BarRaider",
-  "Description": "A counter plugin you can use to keep score. The count is saved to a text file which you can then show on your stream",
+  "Description": "A counter plugin you can use to keep score (kills/deaths/etc). The count is saved to a text file which you can then show live on your stream.",
   "Name": "Stream Counter",
   "Icon": "Images/pluginIcon",
   "URL": "https://barraider.github.io/",
-  "Version": "1.2",
+  "Version": "1.3",
   "CodePath": "com.barraider.streamcounter",
   "Category": "BarRaider",
   "CategoryIcon": "Images/categoryIcon",

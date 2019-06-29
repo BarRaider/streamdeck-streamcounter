@@ -146,11 +146,22 @@ namespace BarRaider.StreamCounter
 
         private void SaveCounterToFile()
         {
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {counter} to counter file: {settings.CounterFileName}");
-            if (!String.IsNullOrWhiteSpace(settings.CounterFileName))
-            {
+            try
 
-                File.WriteAllText(settings.CounterFileName, counter.ToString());
+            {
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {counter} to counter file: {settings.CounterFileName}");
+                if (!String.IsNullOrWhiteSpace(settings.CounterFileName))
+                {
+
+                    File.WriteAllText(settings.CounterFileName, counter.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error Saving value: {counter} to counter file: {settings.CounterFileName} : {ex}");
+                Connection.ShowAlert();
+                settings.CounterFileName = "ACCESS DENIED";
+                SaveSettings();
             }
         }
 

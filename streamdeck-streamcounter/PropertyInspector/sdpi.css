@@ -1,3 +1,7 @@
+.minmargin {
+    margin-left: 0px !important;
+}
+
 .linkspan {
     cursor: pointer;
     color: #7397d2;
