@@ -147,7 +147,6 @@ namespace BarRaider.StreamCounter
         private void SaveCounterToFile()
         {
             try
-
             {
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {counter} to counter file: {settings.CounterFileName}");
                 if (!String.IsNullOrWhiteSpace(settings.CounterFileName))
