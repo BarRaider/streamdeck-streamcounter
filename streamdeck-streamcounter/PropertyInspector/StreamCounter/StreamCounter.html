@@ -15,10 +15,36 @@
         <details class="message">
             <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.github.io</span></summary>
         </details>
+        <div class="sdpi-item" id="dvInitialValue">
+            <div class="sdpi-item-label">Initial Value</div>
+            <input class="sdpi-item-value sdProperty" placeholder="0 " value="0" id="initialValue" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
         <div class="sdpi-item" id="dvCounterFileName">
             <div class="sdpi-item-label">File Name</div>
-            <input class="sdpi-item-value sdProperty" placeholder="c:\mycounter.txt" value="" id="counterFileName">
+            <input class="sdpi-item-value sdProperty" placeholder="c:\temp\mycounter.txt" value="" id="counterFileName">
             <button class="sdpi-item-value max20 minmargin" onclick="setSettings()">Save</button>
+        </div>
+        <div class="sdpi-item" id="select_single">
+            <div class="sdpi-item-label">Short Press Action</div>
+            <select class="sdpi-item-value select sdProperty" id="shortPressCalculation" oninput="setSettings()">
+                <option value="0" selected>Add</option>
+                <option value="1">Subtract</option>
+                <option value="2">Multiply</option>
+                <option value="3">Divide</option>
+            </select>
+        </div>
+        <div class="sdpi-item" id="select_single">
+            <div class="sdpi-item-label">Long Press Action</div>
+            <select class="sdpi-item-value select sdProperty" id="longPressCalculation" oninput="setSettings()">
+                <option value="0">Add</option>
+                <option value="1" selected>Subtract</option>
+                <option value="2">Multiply</option>
+                <option value="3">Divide</option>
+            </select>
+        </div>
+        <div class="sdpi-item" id="dvIncrement">
+            <div class="sdpi-item-label">Calculation Increment</div>
+            <input class="sdpi-item-value sdProperty" placeholder="1 " value="1" id="increment" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
         <div class="sdpi-item" id="dvTitlePrefix">
             <div class="sdpi-item-label">Title Prefix</div>

@@ -10,7 +10,20 @@ using System.Threading.Tasks;
 
 namespace BarRaider.StreamCounter
 {
+
+    //---------------------------------------------------
+    //          BarRaider's Hall Of Fame
+    // Subscriber: CyberlightGames
     // frankdubbs - $5 tip
+    //---------------------------------------------------
+
+    public enum CounterFunctions
+    {
+        Add = 0,
+        Subtract = 1,
+        Multiply = 2,
+        Divide = 3
+    }
 
     [PluginActionId("com.barraider.streamcounter")]
     public class StreamCounterAction : PluginBase
@@ -19,9 +32,15 @@ namespace BarRaider.StreamCounter
         {
             public static PluginSettings CreateDefaultSettings()
             {
-                PluginSettings instance = new PluginSettings();
-                instance.CounterFileName = String.Empty;
-                instance.TitlePrefix = String.Empty;
+                PluginSettings instance = new PluginSettings
+                {
+                    CounterFileName = String.Empty,
+                    TitlePrefix = String.Empty,
+                    ShortPressCalculation = "0", // CounterFunctions.Add
+                    LongPressCalculation  = "1", // CounterFunctions.Subtract
+                    Increment = "1",
+                    InitialValue = "0"
+                };
                 return instance;
             }
 
@@ -31,18 +50,36 @@ namespace BarRaider.StreamCounter
 
             [JsonProperty(PropertyName = "titlePrefix")]
             public string TitlePrefix { get; set; }
+
+            [JsonProperty(PropertyName = "shortPressCalculation")]
+            public string ShortPressCalculation { get; set; }
+
+            [JsonProperty(PropertyName = "longPressCalculation")]
+            public string LongPressCalculation { get; set; }
+
+            [JsonProperty(PropertyName = "increment")]
+            public string Increment { get; set; }
+
+            [JsonProperty(PropertyName = "initialValue")]
+            public string InitialValue { get; set; }           
         }
 
         #region Private Members
+
+        private delegate int CalculationFunction(int num1, int num2);
 
         private const int DECREASE_COUNTER_KEYPRESS_LENGTH = 600;
         private const int RESET_COUNTER_KEYPRESS_LENGTH = 2300;
 
         private PluginSettings settings;
         private int counter = 0;
+        private int incrementor = 1;
+        private int initialValue = 0;
         private DateTime keyPressStart;
         private bool keyPressed = false;
-
+        private CalculationFunction shortPressCalculation;
+        private CalculationFunction longPressCalculation;
+        
         #endregion
         public StreamCounterAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
         {
@@ -56,6 +93,7 @@ namespace BarRaider.StreamCounter
             }
             Connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
             LoadCounterFromFile();
+            InitalizeSettings();
         }
 
         public override void Dispose()
@@ -77,7 +115,7 @@ namespace BarRaider.StreamCounter
             int timeKeyWasPressed = (int)(DateTime.Now - keyPressStart).TotalMilliseconds;
             if (timeKeyWasPressed < DECREASE_COUNTER_KEYPRESS_LENGTH) // Increase counter
             {
-                counter++;
+                counter = shortPressCalculation(counter, incrementor);
                 SaveCounterToFile();
             }
             keyPressed = false;
@@ -90,13 +128,12 @@ namespace BarRaider.StreamCounter
                 int timeKeyWasPressed = (int)(DateTime.Now - keyPressStart).TotalMilliseconds;
                 if (timeKeyWasPressed >= DECREASE_COUNTER_KEYPRESS_LENGTH &&  timeKeyWasPressed < RESET_COUNTER_KEYPRESS_LENGTH) // Decrease counter
                 {
-                    counter--;
+                    counter = longPressCalculation(counter, incrementor);
                     SaveCounterToFile();
                 }
                 else if (timeKeyWasPressed >= RESET_COUNTER_KEYPRESS_LENGTH) // Reset counter
                 {
-                    counter = 0;
-                    SaveCounterToFile();
+                    ResetCounter();
                 }
             }
             await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""}{counter}");
@@ -104,9 +141,16 @@ namespace BarRaider.StreamCounter
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
+            string previousInitialValue = settings.InitialValue;
             Tools.AutoPopulateSettings(settings, payload.Settings);
             SaveSettings();
             LoadCounterFromFile();
+            InitalizeSettings();
+
+            if (previousInitialValue != settings.InitialValue)
+            {
+                ResetCounter();
+            }
         }
 
         public override void ReceivedGlobalSettings(ReceivedGlobalSettingsPayload payload) { }
@@ -169,6 +213,54 @@ namespace BarRaider.StreamCounter
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
+        private void InitalizeSettings()
+        {
+            // Get user requested values
+            shortPressCalculation = GetCalculationFunctionFromString(settings.ShortPressCalculation) ?? Add;
+            longPressCalculation = GetCalculationFunctionFromString(settings.LongPressCalculation) ?? Subtract;
+
+            if (Int32.TryParse(settings.Increment, out int incrementValue))
+            {
+                incrementor = incrementValue;
+            }
+            else // Invalid value in Increment field
+            {
+                settings.Increment = "1";
+                SaveSettings();
+            }
+
+            if (Int32.TryParse(settings.InitialValue, out int value))
+            {
+                initialValue = value;
+            }
+            else // Invalid value in Increment field
+            {
+                settings.InitialValue = "0";
+                SaveSettings();
+            }
+        }
+
+        private CalculationFunction GetCalculationFunctionFromString(string functionString)
+        {
+            if (String.IsNullOrEmpty(functionString))
+            {
+                return null;
+            }
+
+            CounterFunctions counterFunction = (CounterFunctions)Enum.Parse(typeof(CounterFunctions), functionString);
+            switch (counterFunction)
+            {
+                case CounterFunctions.Add:
+                    return Add;
+                case CounterFunctions.Subtract:
+                    return Subtract;
+                case CounterFunctions.Multiply:
+                    return Multiply;
+                case CounterFunctions.Divide:
+                    return Divide;
+            }
+            return null;
+        }
 
         private void StreamDeckConnection_OnSendToPlugin(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.SendToPluginEvent> e)
         {
@@ -183,12 +275,47 @@ namespace BarRaider.StreamCounter
                 switch (payload["property_inspector"].ToString().ToLower())
                 {
                     case "resetcounter":
-                        counter = 0;
-                        SaveCounterToFile();
+                        ResetCounter();
                         break;
                 }
             }
         }
-       #endregion
+
+        private void ResetCounter()
+        {
+            counter = initialValue;
+            SaveCounterToFile();
+        }
+
+        #region Calculation Functions
+
+        private int Add(int num1, int num2)
+        {
+            return num1 + num2;
+        }
+
+        private int Subtract(int num1, int num2)
+        {
+            return num1 - num2;
+        }
+
+        private int Multiply(int num1, int num2)
+        {
+            return num1 * num2;
+        }
+
+        private int Divide(int num1, int num2)
+        {
+            if (num2 == 0) // Prevent division by zero
+            {
+                return num1;
+            }
+            return num1 / num2;
+        }
+
+
+        #endregion
+
+        #endregion
     }
 }
