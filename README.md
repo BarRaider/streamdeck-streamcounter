@@ -1,9 +1,14 @@
-# Stream-integrated counter for Elgato Stream Deck
+# Stream-integrated Counter for Elgato Stream Deck
 
 A counter plugin you can use to keep score (kills/deaths/etc). The count is saved to a text file which you can then show live on your stream
 
-
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
+
+## New in v1.4
+- Select what type of action a short / long press will perform (Add/Subtract/Multiply/Divide)
+- Supports increments other than 1
+- Supports an initial value other than 0
+- :new: With the new features you can now easily create a Count-Down Counter
 
 ### Download
 
