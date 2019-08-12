@@ -71,7 +71,7 @@ namespace BarRaider.StreamCounter
         private const int DECREASE_COUNTER_KEYPRESS_LENGTH = 600;
         private const int RESET_COUNTER_KEYPRESS_LENGTH = 2300;
 
-        private PluginSettings settings;
+        private readonly PluginSettings settings;
         private int counter = 0;
         private int incrementor = 1;
         private int initialValue = 0;
