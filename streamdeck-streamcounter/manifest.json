@@ -20,7 +20,7 @@
   "Description": "A counter plugin you can use to keep score (kills/deaths/etc). The count is saved to a text file which you can then show live on your stream.\nNew: Advanced features such as changing the increments of each keypress + creating a Count-Down counter.",
   "Name": "Stream Counter",
   "Icon": "Images/pluginIcon",
-  "URL": "https://barraider.github.io/",
+  "URL": "https://BarRaider.com/",
   "Version": "1.5",
   "CodePath": "com.barraider.streamcounter",
   "Category": "BarRaider",

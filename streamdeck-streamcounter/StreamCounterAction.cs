@@ -93,7 +93,7 @@ namespace BarRaider.StreamCounter
             }
             Connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
             LoadCounterFromFile();
-            InitalizeSettings();
+            InitializeSettings();
         }
 
         public override void Dispose()
@@ -145,7 +145,7 @@ namespace BarRaider.StreamCounter
             Tools.AutoPopulateSettings(settings, payload.Settings);
             SaveSettings();
             LoadCounterFromFile();
-            InitalizeSettings();
+            InitializeSettings();
 
             if (previousInitialValue != settings.InitialValue)
             {
@@ -213,7 +213,7 @@ namespace BarRaider.StreamCounter
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
-        private void InitalizeSettings()
+        private void InitializeSettings()
         {
             // Get user requested values
             shortPressCalculation = GetCalculationFunctionFromString(settings.ShortPressCalculation) ?? Add;
