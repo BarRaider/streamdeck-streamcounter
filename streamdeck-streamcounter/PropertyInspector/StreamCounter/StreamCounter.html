@@ -19,10 +19,13 @@
             <div class="sdpi-item-label">Initial Value</div>
             <input class="sdpi-item-value sdProperty" placeholder="0 " value="0" id="initialValue" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
+        <details class="message">
+            <summary>Long press the button to reset to initial value</summary>
+        </details>
         <div class="sdpi-item" id="dvCounterFileName">
             <div class="sdpi-item-label">File Name</div>
-            <input class="sdpi-item-value sdProperty" placeholder="c:\temp\mycounter.txt" value="" id="counterFileName">
-            <button class="sdpi-item-value max20 minmargin" onclick="setSettings()">Save</button>
+            <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterFileName">
+            <button class="max100 minmargin" onclick="openSaveFilePicker('Counter File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterFileName')">...</button>
         </div>
         <div class="sdpi-item" id="select_single">
             <div class="sdpi-item-label">Short Press Action</div>
@@ -49,6 +52,40 @@
         <div class="sdpi-item" id="dvTitlePrefix">
             <div class="sdpi-item-label">Title Prefix</div>
             <input class="sdpi-item-value sdProperty" placeholder="Kills: " value="" id="titlePrefix" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item" id="dvCounterPrefixFileName">
+            <div class="sdpi-item-label">Prefix File Name</div>
+            <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterPrefixFileName">
+            <button class="max100 minmargin" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvSoundOnPress">
+            <div class="sdpi-item-label">Sound</div>
+            <div class="sdpi-item-value">
+                <input id="playSoundOnPress" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="playSoundOnPress" class="sdpi-item-label"><span></span>Play sound on key press</label>
+            </div>
+        </div>
+        <div id="dvSoundOnPressSettings">
+            <div class="sdpi-item" id="dvPlaybackDevices">
+                <div class="sdpi-item-label">Playback Device</div>
+                <select class="sdpi-item-value select sdProperty sdList" id="playbackDevices" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="playbackDevice"></select>
+            </div>
+            <div class="sdpi-item" id="dvSoundFile">
+                <div class="sdpi-item-label">Short Press Sound File</div>
+                <div class="sdpi-item-group file" id="filepickergroup">
+                    <input class="sdpi-item-value sdProperty sdFile" type="file" id="playSoundOnPressFile" accept=".wav, .mp3, .ogg, .wma, .aac, .mp4" oninput="setSettings()">
+                    <label class="sdpi-file-info " for="playSoundOnPressFile" id="playSoundOnPressFileFilename">No file...</label>
+                    <label class="sdpi-file-label" for="playSoundOnPressFile">Choose file...</label>
+                </div>
+            </div>
+            <div class="sdpi-item" id="dvSoundFile">
+                <div class="sdpi-item-label">Long Press Sound File</div>
+                <div class="sdpi-item-group file" id="filepickergroup">
+                    <input class="sdpi-item-value sdProperty sdFile" type="file" id="playSoundOnLongPressFile" accept=".wav, .mp3, .ogg, .wma, .aac, .mp4" oninput="setSettings()">
+                    <label class="sdpi-file-info " for="playSoundOnLongPressFile" id="playSoundOnLongPressFileFilename">No file...</label>
+                    <label class="sdpi-file-label" for="playSoundOnLongPressFile">Choose file...</label>
+                </div>
+            </div>
         </div>
         <hr />
         <div class="sdpi-item" id="dvReset">

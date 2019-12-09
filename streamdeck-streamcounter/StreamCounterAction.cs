@@ -1,4 +1,6 @@
 ﻿using BarRaider.SdTools;
+using BarRaider.StreamCounter.Wrappers;
+using NAudio.Wave;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,6 +17,9 @@ namespace BarRaider.StreamCounter
     //          BarRaider's Hall Of Fame
     // Subscriber: CyberlightGames
     // frankdubbs - $5 tip
+    // Subscriber: Tek_Soup
+    // Subscriber: Dualchart
+    // Subscriber: ChaosZake (Gifted by Dualchart)
     //---------------------------------------------------
 
     public enum CounterFunctions
@@ -39,7 +44,13 @@ namespace BarRaider.StreamCounter
                     ShortPressCalculation = "0", // CounterFunctions.Add
                     LongPressCalculation  = "1", // CounterFunctions.Subtract
                     Increment = "1",
-                    InitialValue = "0"
+                    InitialValue = "0",
+                    PlaySoundOnPress = false,
+                    PlaybackDevice = String.Empty,
+                    PlaybackDevices = null,
+                    PlaySoundOnLongPressFile = String.Empty,
+                    PlaySoundOnPressFile = String.Empty,
+                    CounterPrefixFileName = String.Empty
                 };
                 return instance;
             }
@@ -61,7 +72,28 @@ namespace BarRaider.StreamCounter
             public string Increment { get; set; }
 
             [JsonProperty(PropertyName = "initialValue")]
-            public string InitialValue { get; set; }           
+            public string InitialValue { get; set; }
+
+            [FilenameProperty]
+            [JsonProperty(PropertyName = "counterPrefixFileName")]
+            public string CounterPrefixFileName { get; set; }
+
+            [JsonProperty(PropertyName = "playSoundOnPress")]
+            public bool PlaySoundOnPress { get; set; }
+
+            [JsonProperty(PropertyName = "playbackDevices")]
+            public List<PlaybackDevice> PlaybackDevices { get; set; }
+
+            [JsonProperty(PropertyName = "playbackDevice")]
+            public string PlaybackDevice { get; set; }
+
+            [FilenameProperty]
+            [JsonProperty(PropertyName = "playSoundOnPressFile")]
+            public string PlaySoundOnPressFile { get; set; }
+
+            [FilenameProperty]
+            [JsonProperty(PropertyName = "playSoundOnLongPressFile")]
+            public string PlaySoundOnLongPressFile { get; set; }
         }
 
         #region Private Members
@@ -70,6 +102,8 @@ namespace BarRaider.StreamCounter
 
         private const int DECREASE_COUNTER_KEYPRESS_LENGTH = 600;
         private const int RESET_COUNTER_KEYPRESS_LENGTH = 2300;
+        private const string FILE_ERROR_MESSAGE = "ERROR SAVING";
+        private const int COUNTER_REFRESH_TIME = 3000;
 
         private readonly PluginSettings settings;
         private int counter = 0;
@@ -79,6 +113,7 @@ namespace BarRaider.StreamCounter
         private bool keyPressed = false;
         private CalculationFunction shortPressCalculation;
         private CalculationFunction longPressCalculation;
+        private DateTime lastCounterUpdate;
         
         #endregion
         public StreamCounterAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -108,6 +143,7 @@ namespace BarRaider.StreamCounter
             keyPressStart = DateTime.Now;
             keyPressed = true;
             Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
+            LoadCounterFromFile();
         }
 
         public override void KeyReleased(KeyPayload payload)
@@ -116,7 +152,8 @@ namespace BarRaider.StreamCounter
             if (timeKeyWasPressed < DECREASE_COUNTER_KEYPRESS_LENGTH) // Increase counter
             {
                 counter = shortPressCalculation(counter, incrementor);
-                SaveCounterToFile();
+                SaveCounterToFiles();
+                PlaySoundOnPress(settings.PlaySoundOnPressFile);
             }
             keyPressed = false;
         }
@@ -129,12 +166,17 @@ namespace BarRaider.StreamCounter
                 if (timeKeyWasPressed >= DECREASE_COUNTER_KEYPRESS_LENGTH &&  timeKeyWasPressed < RESET_COUNTER_KEYPRESS_LENGTH) // Decrease counter
                 {
                     counter = longPressCalculation(counter, incrementor);
-                    SaveCounterToFile();
+                    SaveCounterToFiles();
+                    PlaySoundOnPress(settings.PlaySoundOnLongPressFile);
                 }
                 else if (timeKeyWasPressed >= RESET_COUNTER_KEYPRESS_LENGTH) // Reset counter
                 {
                     ResetCounter();
                 }
+            }
+            if ((DateTime.Now - lastCounterUpdate).TotalMilliseconds > COUNTER_REFRESH_TIME)
+            {
+                LoadCounterFromFile();
             }
             await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""}{counter}");
         }
@@ -165,11 +207,13 @@ namespace BarRaider.StreamCounter
             {
                 try
                 {
-                    if (!File.Exists(settings.CounterFileName))
+                    if (!File.Exists(settings.CounterFileName) || // If counter file doesn't exist
+                        (!string.IsNullOrWhiteSpace(settings.CounterPrefixFileName) && !File.Exists(settings.CounterPrefixFileName))) // Prefix file doesn't exist
                     {
-                        SaveCounterToFile();
+                        SaveCounterToFiles();
                     }
 
+                    lastCounterUpdate = DateTime.Now;
                     string text = File.ReadAllText(settings.CounterFileName);
                     if (int.TryParse(text, out counter)) // Try and read counter data from file and store in counter variable
                     {
@@ -188,23 +232,37 @@ namespace BarRaider.StreamCounter
             }
         }
 
-        private void SaveCounterToFile()
+        private void SaveCounterToFiles()
+        {
+            if (!SaveToFile(settings.CounterFileName, counter.ToString()))
+            {
+                settings.CounterFileName = FILE_ERROR_MESSAGE;
+                SaveSettings();
+            }
+            if (!SaveToFile(settings.CounterPrefixFileName, $"{settings.TitlePrefix}{counter}"))
+            {
+                settings.CounterPrefixFileName = FILE_ERROR_MESSAGE;
+                SaveSettings();
+            }
+        }
+
+        private bool SaveToFile(string fileName, string value)
         {
             try
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {counter} to counter file: {settings.CounterFileName}");
-                if (!String.IsNullOrWhiteSpace(settings.CounterFileName))
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {value} to counter file: {fileName}");
+                if (!String.IsNullOrWhiteSpace(fileName))
                 {
 
-                    File.WriteAllText(settings.CounterFileName, counter.ToString());
+                    File.WriteAllText(fileName, value);
                 }
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error Saving value: {counter} to counter file: {settings.CounterFileName} : {ex}");
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error Saving value: {value} to counter file: {fileName} : {ex}");
                 Connection.ShowAlert();
-                settings.CounterFileName = "ACCESS DENIED";
-                SaveSettings();
+                return false;
             }
         }
 
@@ -238,6 +296,82 @@ namespace BarRaider.StreamCounter
                 settings.InitialValue = "0";
                 SaveSettings();
             }
+            PropagatePlaybackDevices();
+        }
+
+        private void PropagatePlaybackDevices()
+        {
+            settings.PlaybackDevices = new List<PlaybackDevice>();
+
+            try
+            {
+                if (settings.PlaySoundOnPress)
+                {
+                    for (int idx = -1; idx < WaveOut.DeviceCount; idx++)
+                    {
+                        var currDevice = WaveOut.GetCapabilities(idx);
+                        settings.PlaybackDevices.Add(new PlaybackDevice() { ProductName = currDevice.ProductName });
+                    }
+
+                    settings.PlaybackDevices = settings.PlaybackDevices.OrderBy(p => p.ProductName).ToList();
+                    SaveSettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error propagating playback devices {ex}");
+            }
+        }
+        private Task PlaySoundOnPress(string fileName)
+        {
+            return Task.Run(() =>
+            {
+                // Q98NF-KR5LZ-DWBAB
+                if (!settings.PlaySoundOnPress)
+                {
+                    return;
+                }
+
+                if (String.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(settings.PlaybackDevice))
+                {
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"PlaySoundOnPress called but File or Playback device are empty. File: {fileName} Device: {settings.PlaybackDevice}");
+                    return;
+                }
+
+                if (!File.Exists(fileName))
+                {
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"PlaySoundOnPress called but file does not exist: {fileName}");
+                    return;
+                }
+
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"PlaySoundOnPress called. Playing {fileName} on device: {settings.PlaybackDevice}");
+                var deviceNumber = GetPlaybackDeviceFromDeviceName(settings.PlaybackDevice); using (var audioFile = new AudioFileReader(fileName))
+                {
+                    using (var outputDevice = new WaveOutEvent())
+                    {
+                        outputDevice.DeviceNumber = deviceNumber;
+                        outputDevice.Init(audioFile);
+                        outputDevice.Play();
+                        while (outputDevice.PlaybackState == PlaybackState.Playing)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                        }
+                    }
+                }
+            });
+        }
+
+        private int GetPlaybackDeviceFromDeviceName(string deviceName)
+        {
+            for (int idx = -1; idx < WaveOut.DeviceCount; idx++)
+            {
+                var currDevice = WaveOut.GetCapabilities(idx);
+                if (deviceName == currDevice.ProductName)
+                {
+                    return idx;
+                }
+            }
+            return -1;
         }
 
         private CalculationFunction GetCalculationFunctionFromString(string functionString)
@@ -277,6 +411,20 @@ namespace BarRaider.StreamCounter
                     case "resetcounter":
                         ResetCounter();
                         break;
+                    case "loadsavepicker":
+                        string propertyName = (string)payload["property_name"];
+                        string pickerTitle = (string)payload["picker_title"];
+                        string pickerFilter = (string)payload["picker_filter"];
+                        string fileName = PickersUtil.Pickers.SaveFilePicker(pickerTitle, null, pickerFilter);
+                        if (!string.IsNullOrEmpty(fileName))
+                        {
+                            if (!PickersUtil.Pickers.SetJsonPropertyValue(settings, propertyName, fileName))
+                            {
+                                Logger.Instance.LogMessage(TracingLevel.ERROR, "Failed to save picker value to settings");
+                            }
+                            SaveSettings();
+                        }
+                        break;
                 }
             }
         }
@@ -284,7 +432,7 @@ namespace BarRaider.StreamCounter
         private void ResetCounter()
         {
             counter = initialValue;
-            SaveCounterToFile();
+            SaveCounterToFiles();
         }
 
         #region Calculation Functions

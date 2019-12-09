@@ -4,6 +4,14 @@ A counter plugin you can use to keep score (kills/deaths/etc). The count is save
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+## New in v1.6
+- ***SOUND SUPPORT*** You can now choose a sound that will be played when you press the button. Choosing the playback device allows you to send the sound directly to your stream.
+- Different sounds for short-press and long-press
+- New option to create a text file that shows both a title and the value of the counter. Useful to display as a source on stream.
+- Counter is read from file on keypress to ensure an accurate value
+- Counter is now refreshed every few seconds. Modifying the file will update the value on the key.
+- Improved UI to allow setting the filename using a file picker
+
 ## New in v1.5
 - Select what type of action a short / long press will perform (Add/Subtract/Multiply/Divide)
 - Supports increments other than 1
