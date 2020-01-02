@@ -392,6 +392,8 @@ namespace BarRaider.StreamCounter
                     return Multiply;
                 case CounterFunctions.Divide:
                     return Divide;
+                default:
+                    break;
             }
             return null;
         }
