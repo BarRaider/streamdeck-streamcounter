@@ -4,6 +4,11 @@ A counter plugin you can use to keep score (kills/deaths/etc). The count is save
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+## New in v1.7
+- Multi-Action support (Counter can now be updated in a Multi-Action based on the Short Press setting)
+- Support for `\n` (new line) in the prefix title (for display on the SD key)
+- Fixed issue where resetting the counter did not clear the text file
+
 ## New in v1.6
 - ***SOUND SUPPORT*** You can now choose a sound that will be played when you press the button. Choosing the playback device allows you to send the sound directly to your stream.
 - Different sounds for short-press and long-press

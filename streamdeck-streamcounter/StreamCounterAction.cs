@@ -20,6 +20,7 @@ namespace BarRaider.StreamCounter
     // Subscriber: Tek_Soup
     // Subscriber: Dualchart
     // Subscriber: ChaosZake (Gifted by Dualchart)
+    // 100 Bits: fragglerocket
     //---------------------------------------------------
 
     public enum CounterFunctions
@@ -42,7 +43,7 @@ namespace BarRaider.StreamCounter
                     CounterFileName = String.Empty,
                     TitlePrefix = String.Empty,
                     ShortPressCalculation = "0", // CounterFunctions.Add
-                    LongPressCalculation  = "1", // CounterFunctions.Subtract
+                    LongPressCalculation = "1", // CounterFunctions.Subtract
                     Increment = "1",
                     InitialValue = "0",
                     PlaySoundOnPress = false,
@@ -50,7 +51,8 @@ namespace BarRaider.StreamCounter
                     PlaybackDevices = null,
                     PlaySoundOnLongPressFile = String.Empty,
                     PlaySoundOnPressFile = String.Empty,
-                    CounterPrefixFileName = String.Empty
+                    CounterPrefixFileName = String.Empty,
+                    ClearFileOnReset = false
                 };
                 return instance;
             }
@@ -94,6 +96,9 @@ namespace BarRaider.StreamCounter
             [FilenameProperty]
             [JsonProperty(PropertyName = "playSoundOnLongPressFile")]
             public string PlaySoundOnLongPressFile { get; set; }
+
+            [JsonProperty(PropertyName = "clearFileOnReset")]
+            public bool ClearFileOnReset { get; set; }  
         }
 
         #region Private Members
@@ -111,6 +116,7 @@ namespace BarRaider.StreamCounter
         private int initialValue = 0;
         private DateTime keyPressStart;
         private bool keyPressed = false;
+        private bool longKeyPressed = false;
         private CalculationFunction shortPressCalculation;
         private CalculationFunction longPressCalculation;
         private DateTime lastCounterUpdate;
@@ -126,14 +132,14 @@ namespace BarRaider.StreamCounter
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
-            Connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
+            Connection.OnSendToPlugin += Connection_OnSendToPlugin;
             LoadCounterFromFile();
             InitializeSettings();
         }
 
         public override void Dispose()
         {
-            Connection.StreamDeckConnection.OnSendToPlugin -= StreamDeckConnection_OnSendToPlugin;
+            Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
         }
 
@@ -142,6 +148,7 @@ namespace BarRaider.StreamCounter
             // Used for long press
             keyPressStart = DateTime.Now;
             keyPressed = true;
+            longKeyPressed = false;
             Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
             LoadCounterFromFile();
         }
@@ -151,8 +158,9 @@ namespace BarRaider.StreamCounter
             int timeKeyWasPressed = (int)(DateTime.Now - keyPressStart).TotalMilliseconds;
             if (timeKeyWasPressed < DECREASE_COUNTER_KEYPRESS_LENGTH) // Increase counter
             {
+                Logger.Instance.LogMessage(TracingLevel.INFO, "Short key press");
                 counter = shortPressCalculation(counter, incrementor);
-                SaveCounterToFiles();
+                SaveCounterToFiles(false);
                 PlaySoundOnPress(settings.PlaySoundOnPressFile);
             }
             keyPressed = false;
@@ -163,14 +171,17 @@ namespace BarRaider.StreamCounter
             if (keyPressed)
             {
                 int timeKeyWasPressed = (int)(DateTime.Now - keyPressStart).TotalMilliseconds;
-                if (timeKeyWasPressed >= DECREASE_COUNTER_KEYPRESS_LENGTH &&  timeKeyWasPressed < RESET_COUNTER_KEYPRESS_LENGTH) // Decrease counter
+                if (!longKeyPressed && timeKeyWasPressed >= DECREASE_COUNTER_KEYPRESS_LENGTH &&  timeKeyWasPressed < RESET_COUNTER_KEYPRESS_LENGTH) // Decrease counter
                 {
+                    Logger.Instance.LogMessage(TracingLevel.INFO, "Long key press");
+                    longKeyPressed = true;
                     counter = longPressCalculation(counter, incrementor);
-                    SaveCounterToFiles();
+                    SaveCounterToFiles(false);
                     PlaySoundOnPress(settings.PlaySoundOnLongPressFile);
                 }
                 else if (timeKeyWasPressed >= RESET_COUNTER_KEYPRESS_LENGTH) // Reset counter
                 {
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Key pressed for {timeKeyWasPressed}, resetting");
                     ResetCounter();
                 }
             }
@@ -178,7 +189,7 @@ namespace BarRaider.StreamCounter
             {
                 LoadCounterFromFile();
             }
-            await Connection.SetTitleAsync($"{settings.TitlePrefix ?? ""}{counter}");
+            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}");
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
@@ -191,6 +202,7 @@ namespace BarRaider.StreamCounter
 
             if (previousInitialValue != settings.InitialValue)
             {
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"InitialValue setting was modified");
                 ResetCounter();
             }
         }
@@ -210,7 +222,7 @@ namespace BarRaider.StreamCounter
                     if (!File.Exists(settings.CounterFileName) || // If counter file doesn't exist
                         (!string.IsNullOrWhiteSpace(settings.CounterPrefixFileName) && !File.Exists(settings.CounterPrefixFileName))) // Prefix file doesn't exist
                     {
-                        SaveCounterToFiles();
+                        SaveCounterToFiles(false);
                     }
 
                     lastCounterUpdate = DateTime.Now;
@@ -232,15 +244,25 @@ namespace BarRaider.StreamCounter
             }
         }
 
-        private void SaveCounterToFiles()
+        private void SaveCounterToFiles(bool isReset)
         {
             if (!SaveToFile(settings.CounterFileName, counter.ToString()))
             {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Saving to counter file failed: {settings.CounterFileName}");
                 settings.CounterFileName = FILE_ERROR_MESSAGE;
                 SaveSettings();
             }
-            if (!SaveToFile(settings.CounterPrefixFileName, $"{settings.TitlePrefix}{counter}"))
+
+            // Clean out the prefix file if it's requested for a reset.
+            string prefixText = $"{settings.TitlePrefix?.Replace(@"\n", "")}{counter}";
+            if (isReset && settings.ClearFileOnReset)
             {
+                prefixText = String.Empty;
+            }
+
+            if (!SaveToFile(settings.CounterPrefixFileName, prefixText))
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Saving to prefix file failed: {settings.CounterPrefixFileName}");
                 settings.CounterPrefixFileName = FILE_ERROR_MESSAGE;
                 SaveSettings();
             }
@@ -250,10 +272,9 @@ namespace BarRaider.StreamCounter
         {
             try
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {value} to counter file: {fileName}");
                 if (!String.IsNullOrWhiteSpace(fileName))
                 {
-
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {value} to counter file: {fileName}");
                     File.WriteAllText(fileName, value);
                 }
                 return true;
@@ -326,7 +347,6 @@ namespace BarRaider.StreamCounter
         {
             return Task.Run(() =>
             {
-                // Q98NF-KR5LZ-DWBAB
                 if (!settings.PlaySoundOnPress)
                 {
                     return;
@@ -398,19 +418,16 @@ namespace BarRaider.StreamCounter
             return null;
         }
 
-        private void StreamDeckConnection_OnSendToPlugin(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.SendToPluginEvent> e)
+        private void Connection_OnSendToPlugin(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.SendToPlugin> e)
         {
             var payload = e.Event.Payload;
-            if (Connection.ContextId != e.Event.Context)
-            {
-                return;
-            }
 
             if (payload["property_inspector"] != null)
             {
                 switch (payload["property_inspector"].ToString().ToLower())
                 {
                     case "resetcounter":
+                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Reset button pressed in PI");
                         ResetCounter();
                         break;
                     case "loadsavepicker":
@@ -433,8 +450,9 @@ namespace BarRaider.StreamCounter
 
         private void ResetCounter()
         {
+            Logger.Instance.LogMessage(TracingLevel.WARN, $"ResetCounter called");
             counter = initialValue;
-            SaveCounterToFiles();
+            SaveCounterToFiles(true);
         }
 
         #region Calculation Functions

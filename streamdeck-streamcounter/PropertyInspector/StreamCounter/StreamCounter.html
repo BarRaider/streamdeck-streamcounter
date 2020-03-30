@@ -20,8 +20,12 @@
             <input class="sdpi-item-value sdProperty" placeholder="0 " value="0" id="initialValue" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
         <details class="message">
-            <summary>Long press the button to reset to initial value</summary>
+            <summary>Press button for over 3 seconds to reset to initial value</summary>
         </details>
+        <details class="message">
+            <summary>A filename must be set for counter to work</summary>
+        </details>
+
         <div class="sdpi-item" id="dvCounterFileName">
             <div class="sdpi-item-label">File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterFileName">
@@ -51,12 +55,19 @@
         </div>
         <div class="sdpi-item" id="dvTitlePrefix">
             <div class="sdpi-item-label">Title Prefix</div>
-            <input class="sdpi-item-value sdProperty" placeholder="Kills: " value="" id="titlePrefix" oninput="setSettings()">
+            <input class="sdpi-item-value sdProperty" placeholder="Kills: \n" value="" id="titlePrefix" oninput="setSettings()">
         </div>
         <div class="sdpi-item" id="dvCounterPrefixFileName">
             <div class="sdpi-item-label">Prefix File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterPrefixFileName">
             <button class="max100 minmargin" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvClearFileOnReset">
+            <div class="sdpi-item-label">Clear File</div>
+            <div class="sdpi-item-value">
+                <input id="clearFileOnReset" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="clearFileOnReset" class="sdpi-item-label"><span></span>Clear prefix file on counter reset</label>
+            </div>
         </div>
         <div type="checkbox" class="sdpi-item" id="dvSoundOnPress">
             <div class="sdpi-item-label">Sound</div>
