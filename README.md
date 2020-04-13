@@ -2,7 +2,7 @@
 
 A counter plugin you can use to keep score (kills/deaths/etc). The count is saved to a text file which you can then show live on your stream
 
-**Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
+**Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
 ## New in v1.7
 - Multi-Action support (Counter can now be updated in a Multi-Action based on the Short Press setting)
@@ -28,13 +28,11 @@ A counter plugin you can use to keep score (kills/deaths/etc). The count is save
 * [Download plugin](https://github.com/BarRaider/streamdeck-streamcounter/releases)
 
 ## I found a bug, who do I contact?
-For support please contact the developer. Contact information is available at https://barraider.github.io
+For support please contact the developer. Contact information is available at https://barraider.com
 
 ## I have a feature request, who do I contact?
-Please contact the developer. Contact information is available at https://barraider.github.io
+Please contact the developer. Contact information is available at https://barraider.com
 
 ## Dependencies
 * Uses StreamDeck-Tools by BarRaider: [![NuGet](https://img.shields.io/nuget/v/streamdeck-tools.svg?style=flat)](https://www.nuget.org/packages/streamdeck-tools)
-
 * Uses [Easy-PI](https://github.com/BarRaider/streamdeck-easypi) by BarRaider - Provides seamless integration with the Stream Deck PI (Property Inspector) 
-
