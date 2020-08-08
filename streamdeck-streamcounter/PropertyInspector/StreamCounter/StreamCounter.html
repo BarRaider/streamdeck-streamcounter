@@ -8,6 +8,7 @@
     <title>BarRaider's Stream Counter</title>
     <link rel="stylesheet" href="../sdpi.css">
     <script src="../sdtools.common.js"></script>
+    <script src="../pickers.js"></script>
     <script src="../StreamCounter.js"></script>
 </head>
 <body>
@@ -52,6 +53,17 @@
         <div class="sdpi-item" id="dvIncrement">
             <div class="sdpi-item-label">Calculation Increment</div>
             <input class="sdpi-item-value sdProperty" placeholder="1 " value="1" id="increment" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item" id="dvOutputSuffix">
+            <div class="sdpi-item-label">Output Suffix</div>
+            <input class="sdpi-item-value sdProperty" value="" id="outputSuffix" oninput="setSettings()">
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvSuffixStreamDeck">
+            <div class="sdpi-item-label">Stream Deck</div>
+            <div class="sdpi-item-value">
+                <input id="suffixStreamDeck" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="suffixStreamDeck" class="sdpi-item-label"><span></span>Show suffix in Stream Deck</label>
+            </div>
         </div>
         <div class="sdpi-item" id="dvTitlePrefix">
             <div class="sdpi-item-label">Title Prefix</div>

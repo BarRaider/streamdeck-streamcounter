@@ -42,6 +42,8 @@ namespace BarRaider.StreamCounter
                 {
                     CounterFileName = String.Empty,
                     TitlePrefix = String.Empty,
+                    OutputSuffix = String.Empty,
+                    SuffixStreamDeck = false,
                     ShortPressCalculation = "0", // CounterFunctions.Add
                     LongPressCalculation = "1", // CounterFunctions.Subtract
                     Increment = "1",
@@ -63,6 +65,12 @@ namespace BarRaider.StreamCounter
 
             [JsonProperty(PropertyName = "titlePrefix")]
             public string TitlePrefix { get; set; }
+
+            [JsonProperty(PropertyName = "outputSuffix")]
+            public string OutputSuffix { get; set; }
+
+            [JsonProperty(PropertyName = "suffixStreamDeck")]
+            public bool SuffixStreamDeck { get; set; }
 
             [JsonProperty(PropertyName = "shortPressCalculation")]
             public string ShortPressCalculation { get; set; }
@@ -189,7 +197,14 @@ namespace BarRaider.StreamCounter
             {
                 LoadCounterFromFile();
             }
-            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}");
+
+            string suffix = "";
+            if (settings.SuffixStreamDeck)
+            {
+                suffix = settings.OutputSuffix;
+            }
+
+            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}{suffix}");
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
@@ -227,6 +242,12 @@ namespace BarRaider.StreamCounter
 
                     lastCounterUpdate = DateTime.Now;
                     string text = File.ReadAllText(settings.CounterFileName);
+                    
+                    if (!string.IsNullOrWhiteSpace(settings.OutputSuffix)) // Try and remove the suffix
+                    {
+                        text = text.EndsWith(settings.OutputSuffix) ? text.Remove(text.LastIndexOf(settings.OutputSuffix, StringComparison.Ordinal)) : text;
+                    }
+
                     if (int.TryParse(text, out counter)) // Try and read counter data from file and store in counter variable
                     {
                         Logger.Instance.LogMessage(TracingLevel.INFO, $"Loaded {counter} from file");
@@ -246,7 +267,7 @@ namespace BarRaider.StreamCounter
 
         private void SaveCounterToFiles(bool isReset)
         {
-            if (!SaveToFile(settings.CounterFileName, counter.ToString()))
+            if (!SaveToFile(settings.CounterFileName, counter.ToString() + settings.OutputSuffix))
             {
                 Logger.Instance.LogMessage(TracingLevel.ERROR, $"Saving to counter file failed: {settings.CounterFileName}");
                 settings.CounterFileName = FILE_ERROR_MESSAGE;
