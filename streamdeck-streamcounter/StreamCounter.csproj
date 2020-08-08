@@ -131,7 +131,9 @@
     <Content Include="PropertyInspector\elg_calendar_inv.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PropertyInspector\pickers.js" />
+    <Content Include="PropertyInspector\pickers.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="PropertyInspector\rcheck.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
