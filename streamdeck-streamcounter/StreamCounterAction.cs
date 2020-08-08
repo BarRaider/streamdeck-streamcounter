@@ -43,6 +43,7 @@ namespace BarRaider.StreamCounter
                     CounterFileName = String.Empty,
                     TitlePrefix = String.Empty,
                     OutputSuffix = String.Empty,
+                    SuffixStreamDeck = false,
                     ShortPressCalculation = "0", // CounterFunctions.Add
                     LongPressCalculation = "1", // CounterFunctions.Subtract
                     Increment = "1",
@@ -67,6 +68,9 @@ namespace BarRaider.StreamCounter
 
             [JsonProperty(PropertyName = "outputSuffix")]
             public string OutputSuffix { get; set; }
+
+            [JsonProperty(PropertyName = "suffixStreamDeck")]
+            public bool SuffixStreamDeck { get; set; }
 
             [JsonProperty(PropertyName = "shortPressCalculation")]
             public string ShortPressCalculation { get; set; }
@@ -193,7 +197,14 @@ namespace BarRaider.StreamCounter
             {
                 LoadCounterFromFile();
             }
-            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}");
+
+            string suffix = "";
+            if (settings.SuffixStreamDeck)
+            {
+                suffix = settings.OutputSuffix;
+            }
+
+            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}{suffix}");
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
