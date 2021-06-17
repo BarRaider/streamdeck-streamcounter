@@ -1,6 +1,5 @@
 ﻿using BarRaider.SdTools;
 using BarRaider.StreamCounter.Wrappers;
-using NAudio.Wave;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -10,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BarRaider.StreamCounter
+namespace BarRaider.StreamCounter.Actions
 {
 
     //---------------------------------------------------
@@ -133,12 +132,14 @@ namespace BarRaider.StreamCounter
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
             Connection.OnSendToPlugin += Connection_OnSendToPlugin;
+            Connection.OnPropertyInspectorDidAppear += Connection_OnPropertyInspectorDidAppear;
             LoadCounterFromFile();
             InitializeSettings();
         }
 
         public override void Dispose()
         {
+            Connection.OnPropertyInspectorDidAppear -= Connection_OnPropertyInspectorDidAppear;
             Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
         }
@@ -195,6 +196,7 @@ namespace BarRaider.StreamCounter
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
             string previousInitialValue = settings.InitialValue;
+            bool playSound = settings.PlaySoundOnPress;
             Tools.AutoPopulateSettings(settings, payload.Settings);
             SaveSettings();
             LoadCounterFromFile();
@@ -204,6 +206,11 @@ namespace BarRaider.StreamCounter
             {
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"InitialValue setting was modified");
                 ResetCounter();
+            }
+
+            if (playSound != settings.PlaySoundOnPress && settings.PlaySoundOnPress)
+            {
+                PropagatePlaybackDevices();
             }
         }
 
@@ -317,7 +324,6 @@ namespace BarRaider.StreamCounter
                 settings.InitialValue = "0";
                 SaveSettings();
             }
-            PropagatePlaybackDevices();
         }
 
         private void PropagatePlaybackDevices()
@@ -328,13 +334,8 @@ namespace BarRaider.StreamCounter
             {
                 if (settings.PlaySoundOnPress)
                 {
-                    for (int idx = -1; idx < WaveOut.DeviceCount; idx++)
-                    {
-                        var currDevice = WaveOut.GetCapabilities(idx);
-                        settings.PlaybackDevices.Add(new PlaybackDevice() { ProductName = currDevice.ProductName });
-                    }
 
-                    settings.PlaybackDevices = settings.PlaybackDevices.OrderBy(p => p.ProductName).ToList();
+                    settings.PlaybackDevices = AudioUtils.Common.GetAllPlaybackDevices(true).Select(d => new PlaybackDevice() { ProductName = d }).OrderBy(p => p.ProductName).ToList();
                     SaveSettings();
                 }
             }
@@ -345,7 +346,7 @@ namespace BarRaider.StreamCounter
         }
         private Task PlaySoundOnPress(string fileName)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 if (!settings.PlaySoundOnPress)
                 {
@@ -365,33 +366,8 @@ namespace BarRaider.StreamCounter
                 }
 
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"PlaySoundOnPress called. Playing {fileName} on device: {settings.PlaybackDevice}");
-                var deviceNumber = GetPlaybackDeviceFromDeviceName(settings.PlaybackDevice); using (var audioFile = new AudioFileReader(fileName))
-                {
-                    using (var outputDevice = new WaveOutEvent())
-                    {
-                        outputDevice.DeviceNumber = deviceNumber;
-                        outputDevice.Init(audioFile);
-                        outputDevice.Play();
-                        while (outputDevice.PlaybackState == PlaybackState.Playing)
-                        {
-                            System.Threading.Thread.Sleep(1000);
-                        }
-                    }
-                }
+                await AudioUtils.Common.PlaySound(fileName, settings.PlaybackDevice);
             });
-        }
-
-        private int GetPlaybackDeviceFromDeviceName(string deviceName)
-        {
-            for (int idx = -1; idx < WaveOut.DeviceCount; idx++)
-            {
-                var currDevice = WaveOut.GetCapabilities(idx);
-                if (deviceName == currDevice.ProductName)
-                {
-                    return idx;
-                }
-            }
-            return -1;
         }
 
         private CalculationFunction GetCalculationFunctionFromString(string functionString)
@@ -424,7 +400,7 @@ namespace BarRaider.StreamCounter
 
             if (payload["property_inspector"] != null)
             {
-                switch (payload["property_inspector"].ToString().ToLower())
+                switch (payload["property_inspector"].ToString().ToLowerInvariant())
                 {
                     case "resetcounter":
                         Logger.Instance.LogMessage(TracingLevel.INFO, $"Reset button pressed in PI");
@@ -453,6 +429,10 @@ namespace BarRaider.StreamCounter
             Logger.Instance.LogMessage(TracingLevel.WARN, $"ResetCounter called");
             counter = initialValue;
             SaveCounterToFiles(true);
+        }
+        private void Connection_OnPropertyInspectorDidAppear(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.PropertyInspectorDidAppear> e)
+        {
+            PropagatePlaybackDevices();
         }
 
         #region Calculation Functions

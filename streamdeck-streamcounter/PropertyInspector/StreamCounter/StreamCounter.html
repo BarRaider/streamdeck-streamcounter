@@ -7,7 +7,8 @@
     <meta name=apple-mobile-web-app-status-bar-style content=black>
     <title>BarRaider's Stream Counter</title>
     <link rel="stylesheet" href="../sdpi.css">
-    <script src="../sdtools.common.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/pickers.js"></script>
     <script src="../StreamCounter.js"></script>
 </head>
 <body>
@@ -29,7 +30,7 @@
         <div class="sdpi-item" id="dvCounterFileName">
             <div class="sdpi-item-label">File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterFileName">
-            <button class="max100 minmargin" onclick="openSaveFilePicker('Counter File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterFileName')">...</button>
+            <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterFileName')">...</button>
         </div>
         <div class="sdpi-item" id="select_single">
             <div class="sdpi-item-label">Short Press Action</div>
@@ -60,7 +61,7 @@
         <div class="sdpi-item" id="dvCounterPrefixFileName">
             <div class="sdpi-item-label">Prefix File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterPrefixFileName">
-            <button class="max100 minmargin" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
+            <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
         </div>
         <div type="checkbox" class="sdpi-item" id="dvClearFileOnReset">
             <div class="sdpi-item-label">Clear File</div>
