@@ -6,9 +6,9 @@
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
     <title>BarRaider's Stream Counter</title>
-    <link rel="stylesheet" href="../sdpi.css">
-    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/pickers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi-v2@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi-v2@latest/src/sdtools.common.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi-v2@latest/src/pickers.js"></script>
     <script src="../StreamCounter.js"></script>
 </head>
 <body>
@@ -23,15 +23,20 @@
         <details class="message">
             <summary>Press button for over 3 seconds to reset to initial value</summary>
         </details>
-        <details class="message">
-            <summary>A filename must be set for counter to work</summary>
-        </details>
 
+        <div class="sdpi-heading">FILE SETTINGS</div>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>A filename must be set for counter to work</summary>
+            </details>
+        </div>
         <div class="sdpi-item" id="dvCounterFileName">
             <div class="sdpi-item-label">File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterFileName">
             <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterFileName')">...</button>
         </div>
+
+        <div class="sdpi-heading">COUNTER BEHAVIOURS</div>
         <div class="sdpi-item" id="select_single">
             <div class="sdpi-item-label">Short Press Action</div>
             <select class="sdpi-item-value select sdProperty" id="shortPressCalculation" oninput="setSettings()">
@@ -53,22 +58,6 @@
         <div class="sdpi-item" id="dvIncrement">
             <div class="sdpi-item-label">Calculation Increment</div>
             <input class="sdpi-item-value sdProperty" placeholder="1 " value="1" id="increment" pattern="^[0-9]*$" oninput="setSettings()">
-        </div>
-        <div class="sdpi-item" id="dvTitlePrefix">
-            <div class="sdpi-item-label">Title Prefix</div>
-            <input class="sdpi-item-value sdProperty" placeholder="Kills: \n" value="" id="titlePrefix" oninput="setSettings()">
-        </div>
-        <div class="sdpi-item" id="dvCounterPrefixFileName">
-            <div class="sdpi-item-label">Prefix File Name</div>
-            <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterPrefixFileName">
-            <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
-        </div>
-        <div type="checkbox" class="sdpi-item" id="dvClearFileOnReset">
-            <div class="sdpi-item-label">Clear File</div>
-            <div class="sdpi-item-value">
-                <input id="clearFileOnReset" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="clearFileOnReset" class="sdpi-item-label"><span></span>Clear prefix file on counter reset</label>
-            </div>
         </div>
         <div type="checkbox" class="sdpi-item" id="dvSoundOnPress">
             <div class="sdpi-item-label">Sound</div>
@@ -99,6 +88,41 @@
                 </div>
             </div>
         </div>
+
+        <div class="sdpi-heading">PREFIX/SUFFIX BEHAVIOURS</div>
+        <div class="sdpi-item" id="dvTitlePrefix">
+            <div class="sdpi-item-label">Title Prefix</div>
+            <input class="sdpi-item-value sdProperty" placeholder="Kills: \n" value="" id="titlePrefix" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item" id="dvTitleSuffix">
+            <div class="sdpi-item-label">Title Suffix</div>
+            <input class="sdpi-item-value sdProperty" placeholder=" clicks" value="" id="titleSuffix" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item">
+            <details class="message info">
+                <summary>If you want to also see the prefix/suffix on stream, set the "Prefix File" below. Don't use the same filename as the one set above.</summary>
+            </details>
+        </div>
+        <div class="sdpi-item" id="dvCounterPrefixFileName">
+            <div class="sdpi-item-label">Prefix File Name</div>
+            <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="counterPrefixFileName">
+            <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter Prefix File Name','Text files (*.txt)|*.txt|All files (*.*)|*.*','counterPrefixFileName')">...</button>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvClearFileOnReset">
+            <div class="sdpi-item-label">Clear File</div>
+            <div class="sdpi-item-value">
+                <input id="clearFileOnReset" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="clearFileOnReset" class="sdpi-item-label"><span></span>Clear prefix file on counter reset</label>
+            </div>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvClearFileOnReset">
+            <div class="sdpi-item-label">Hide on Key</div>
+            <div class="sdpi-item-value">
+                <input id="hidePrefixOnKey" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="hidePrefixOnKey" class="sdpi-item-label"><span></span>Only show prefix/suffix in file</label>
+            </div>
+        </div>
+
         <hr />
         <div class="sdpi-item" id="dvReset">
             <div class="sdpi-item-label">Reset Counter</div>

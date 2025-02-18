@@ -11,6 +11,7 @@
         }
       ],
       "SupportedInMultiActions": true,
+      "UserTitleEnabled": false,
       "Tooltip": "Counter",
       "UUID": "com.barraider.streamcounter",
       "PropertyInspectorPath": "PropertyInspector/StreamCounter/StreamCounter.html"
@@ -21,9 +22,9 @@
   "Name": "Stream Counter",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.8",
+  "Version": "1.8.1",
   "CodePath": "com.barraider.streamcounter",
-  "Category": "BarRaider",
+  "Category": "Counter [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
   "OS": [
     {
@@ -33,6 +34,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "5.0"
+    "MinimumVersion": "6.8.1"
   }
 }
