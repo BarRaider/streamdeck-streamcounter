@@ -31,7 +31,7 @@ namespace BarRaider.StreamCounter.Actions
     }
 
     [PluginActionId("com.barraider.streamcounter")]
-    public class StreamCounterAction : PluginBase
+    public class StreamCounterAction : KeypadBase
     {
         private class PluginSettings
         {
@@ -41,6 +41,7 @@ namespace BarRaider.StreamCounter.Actions
                 {
                     CounterFileName = String.Empty,
                     TitlePrefix = String.Empty,
+                    TitleSuffix = String.Empty,
                     ShortPressCalculation = "0", // CounterFunctions.Add
                     LongPressCalculation = "1", // CounterFunctions.Subtract
                     Increment = "1",
@@ -51,7 +52,9 @@ namespace BarRaider.StreamCounter.Actions
                     PlaySoundOnLongPressFile = String.Empty,
                     PlaySoundOnPressFile = String.Empty,
                     CounterPrefixFileName = String.Empty,
-                    ClearFileOnReset = false
+                    ClearFileOnReset = false,
+                    HidePrefixOnKey = false
+
                 };
                 return instance;
             }
@@ -62,6 +65,9 @@ namespace BarRaider.StreamCounter.Actions
 
             [JsonProperty(PropertyName = "titlePrefix")]
             public string TitlePrefix { get; set; }
+
+            [JsonProperty(PropertyName = "titleSuffix")]
+            public string TitleSuffix { get; set; }
 
             [JsonProperty(PropertyName = "shortPressCalculation")]
             public string ShortPressCalculation { get; set; }
@@ -97,7 +103,11 @@ namespace BarRaider.StreamCounter.Actions
             public string PlaySoundOnLongPressFile { get; set; }
 
             [JsonProperty(PropertyName = "clearFileOnReset")]
-            public bool ClearFileOnReset { get; set; }  
+            public bool ClearFileOnReset { get; set; }
+
+            [JsonProperty(PropertyName = "hidePrefixOnKey")]
+            public bool HidePrefixOnKey { get; set; }
+            
         }
 
         #region Private Members
@@ -178,7 +188,7 @@ namespace BarRaider.StreamCounter.Actions
                     longKeyPressed = true;
                     counter = longPressCalculation(counter, incrementor);
                     SaveCounterToFiles(false);
-                    PlaySoundOnPress(settings.PlaySoundOnLongPressFile);
+                    await PlaySoundOnPress(settings.PlaySoundOnLongPressFile);
                 }
                 else if (timeKeyWasPressed >= RESET_COUNTER_KEYPRESS_LENGTH) // Reset counter
                 {
@@ -190,7 +200,15 @@ namespace BarRaider.StreamCounter.Actions
             {
                 LoadCounterFromFile();
             }
-            await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n","\n") ?? ""}{counter}");
+
+            if (settings.HidePrefixOnKey)
+            {
+                await Connection.SetTitleAsync($"{counter}");
+            }
+            else
+            {
+                await Connection.SetTitleAsync($"{settings.TitlePrefix?.Replace(@"\n", "\n") ?? ""}{counter}{settings.TitleSuffix?.Replace(@"\n", "\n") ?? ""}");
+            }
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
@@ -261,7 +279,7 @@ namespace BarRaider.StreamCounter.Actions
             }
 
             // Clean out the prefix file if it's requested for a reset.
-            string prefixText = $"{settings.TitlePrefix?.Replace(@"\n", "")}{counter}";
+            string prefixText = $"{settings.TitlePrefix?.Replace(@"\n", "")}{counter}{settings.TitleSuffix?.Replace(@"\n", "")}";
             if (isReset && settings.ClearFileOnReset)
             {
                 prefixText = String.Empty;
