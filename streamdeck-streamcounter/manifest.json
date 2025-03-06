@@ -22,7 +22,7 @@
   "Name": "Stream Counter",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.8.1",
+  "Version": "1.9",
   "CodePath": "com.barraider.streamcounter",
   "Category": "Counter [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
