@@ -4,6 +4,10 @@ A counter plugin you can use to keep score (kills/deaths/etc). The count is save
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v1.9
+- `Suffix support` allows to add some text AFTER the count. 
+- New `Hide On Key` settings shows prefix/suffix only in file and not on key.
+
 ## New in v1.7
 - Multi-Action support (Counter can now be updated in a Multi-Action based on the Short Press setting)
 - Support for `\n` (new line) in the prefix title (for display on the SD key)
